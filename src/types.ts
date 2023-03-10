@@ -1,4 +1,4 @@
-export interface Person {
-  name: string
-  age: number
+export interface Options {
+  collector: string // domain(backend)
+  spa?: boolean // single-page-app or not
 }

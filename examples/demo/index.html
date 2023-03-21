@@ -7,6 +7,59 @@
     <title>Document</title>
   </head>
   <body>
-    <script src="../../lib/index.js"></script>
+    <header>
+      <!-- 在这里添加页面顶部的标题、菜单等 -->
+      <h1>活动标题</h1>
+      <nav>
+        <ul>
+          <li><a href="#">首页</a></li>
+          <li><a href="#">活动规则</a></li>
+          <li><a href="#">奖品设置</a></li>
+          <li><a href="#">报名通道</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <!-- 在这里添加页面主体内容，如活动介绍、报名表单、奖品展示等 -->
+      <section>
+        <h2>活动介绍</h2>
+        <p>这里是活动介绍的内容，可以包括活动的目的、主题、时间、地点等信息。</p>
+      </section>
+      <section>
+        <h2>报名表单</h2>
+        <form>
+          <label for="name">姓名：</label>
+          <input type="text" id="name" name="name" required />
+          <br />
+          <label for="email">邮箱：</label>
+          <input type="email" id="email" name="email" required />
+          <br />
+          <label for="phone">电话：</label>
+          <input type="tel" id="phone" name="phone" required />
+          <br />
+          <button type="submit">提交</button>
+        </form>
+      </section>
+      <section>
+        <h2>奖品展示</h2>
+        <ul>
+          <li>一等奖：xxx</li>
+          <li>二等奖：xxx</li>
+          <li>三等奖：xxx</li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <!-- 在这里添加页面底部的版权信息、联系方式等 -->
+      <p>&copy; 2023 活动主办方</p>
+      <p>联系方式：xxx@xxx.com</p>
+    </footer>
+    <script type="module">
+      import { Monitor } from '../../lib/index.esm.js'
+
+      const monitor = new Monitor()
+
+      monitor.register()
+    </script>
   </body>
 </html>

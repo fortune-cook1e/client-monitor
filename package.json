@@ -1,5 +1,5 @@
 {
-  "name": "client-monitor",
+  "name": "cookie-client-monitor",
   "version": "1.0.0",
   "description": "Client-side Javascript tracing library",
   "main": "lib/index.js",
@@ -21,7 +21,9 @@
   },
   "keywords": [
     "trace",
+    "client-monitor",
     "client-side",
+    "typescript",
     "javascript"
   ],
   "author": "fortune_cookie",

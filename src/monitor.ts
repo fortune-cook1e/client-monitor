@@ -1,10 +1,9 @@
+import trace from './performance/trace'
 import { Options } from './types'
 
 const DEFAULT_OPTIONS: Options = {
   collector: location.host
 }
-
-const { onload, addEventListener } = window
 
 export class Monitor {
   options: Options
@@ -21,19 +20,19 @@ export class Monitor {
       ...this.options,
       ...config
     }
-    this.performance(config)
+    this.performance()
   }
 
-  performance(config?: Partial<Options>) {
+  performance() {
     if (document.readyState === 'complete') {
       // Todo: do same thing as load
       console.log('complete')
     } else {
-      addEventListener(
+      window.addEventListener(
         'load',
         () => {
           // do sth
-          console.log('load..')
+          trace.getPerf(this.options)
         },
         false
       )

@@ -1,6 +1,7 @@
 export interface Options {
   collector: string // domain(backend)
   spa?: boolean // single-page-app or not
+  fmp?: boolean // enable fmp calculation
 }
 
 export interface WebVitals {

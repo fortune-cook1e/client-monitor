@@ -1,4 +1,5 @@
 import { Options, WebVitals } from './../types.d'
+import FMP from './fmp'
 class Trace {
   private perfDetail: WebVitals = {
     network: {},
@@ -7,16 +8,34 @@ class Trace {
 
   public getPerf(options: Options) {
     this.recordPerf(options)
-    // Todo: monitor SPA hash change
+
+    if (options.spa) {
+      // FixMe: hashchange not working with react-router-domV6
+      window.addEventListener(
+        'hashchange',
+        () => {
+          this.recordPerf(options)
+        },
+        false
+      )
+    }
   }
 
-  public recordPerf(options: Options) {
+  public async recordPerf(options: Options) {
+    if (options.fmp) {
+      // get fmp metrics
+      const fmp = await new FMP()
+      this.perfDetail.page.fmp = fmp.fmpTime
+    }
     setTimeout(() => {
-      this.getPerfTiming()
-    }, 1)
+      // get basic metrics
+      this.getWebVitals(options)
+
+      // Todo: report web vitals
+    }, 4000)
   }
 
-  public getPerfTiming(): WebVitals {
+  public getWebVitals(options: Options): WebVitals {
     let { timing } = window.performance as any
 
     // Todo: figure out differences between performance and PerformanceNavigationTiming
@@ -70,7 +89,7 @@ class Trace {
       page: {
         fpt: responseEnd - responseStart,
         tti: domInteractive - domainLookupStart,
-        fmp: 0,
+        fmp: options.fmp ? this.perfDetail.page.fmp : 0,
         domAnalysis: domInteractive - responseEnd,
         domReady: domContentLoadedEventEnd - fetchStart,
         domLoad: loadEventStart - fetchStart
@@ -78,8 +97,6 @@ class Trace {
     }
 
     this.perfDetail = webVitals
-
-    console.log({ webVitals })
 
     return webVitals
   }

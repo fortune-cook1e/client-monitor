@@ -2,7 +2,9 @@ import trace from './performance/trace'
 import { Options } from './types'
 
 const DEFAULT_OPTIONS: Options = {
-  collector: location.host
+  collector: location.host,
+  spa: false,
+  fmp: false
 }
 
 export class Monitor {
@@ -25,8 +27,7 @@ export class Monitor {
 
   performance() {
     if (document.readyState === 'complete') {
-      // Todo: do same thing as load
-      console.log('complete')
+      trace.getPerf(this.options)
     } else {
       window.addEventListener(
         'load',

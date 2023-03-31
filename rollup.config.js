@@ -28,7 +28,7 @@ export default [
       {
         file: './lib/index.js',
         format: 'umd',
-        name: 'client-monitor'
+        name: 'cookie-client-monitor'
       },
       {
         file: './lib/index.esm.js',

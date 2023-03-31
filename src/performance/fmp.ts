@@ -1,24 +1,42 @@
-export interface CalScore {
-  dpss: CalScore[]
-  st: number
-  els: ElementList
+export type ScoredElement = {
+  ele: Element
+  score: number
+  weight: number
+}
+
+export type ScoredElementList = ScoredElement[]
+
+export interface CalculatedScore {
+  dpss: CalculatedScore[]
+  score: number
+  eles: ScoredElementList
   root?: Element
 }
-export type ElementList = Array<{
-  ele: Element
-  st: number
-  weight: number
-}>
+
+export enum Score {
+  Low = 1,
+  Middle = 2,
+  High = 4
+}
 
 // element weight for calculate score
 export enum ELE_WEIGHT {
-  SVG = 2,
-  IMG = 2,
-  CANVAS = 4,
-  OBJECT = 4,
-  EMBED = 4,
-  VIDEO = 4
+  Other = Score.Low,
+  Svg = Score.Middle,
+  Img = Score.Middle,
+  Canvas = Score.High,
+  Object = Score.High,
+  Embed = Score.High,
+  Video = Score.High
 }
+
+export enum ELE_TAG_NAME {
+  Canvas = 'CANVAS',
+  Img = 'IMG',
+  Svg = 'SVG',
+  Video = 'VIDEO'
+}
+
 const IGNORE_TAG_SET: string[] = ['SCRIPT', 'STYLE', 'META', 'HEAD', 'LINK']
 const START_TIME: number = performance.now()
 
@@ -27,7 +45,7 @@ const WH: number = window.innerHeight
 const LIMIT = 3000
 const DELAY = 2000 // fmp retry interval
 
-const TAG_ATTRIBUTE = 'fmp_c'
+const FMP_ATTRIBUTE = 'fmp_c'
 
 const getStyle = (element: Element | any, attr: any) => {
   if (window.getComputedStyle) {
@@ -36,6 +54,17 @@ const getStyle = (element: Element | any, attr: any) => {
     return element.currentStyle[attr]
   }
 }
+
+// ## how to calculate FMP time
+
+// 1. use MutationObserver to observe document
+// 2. callback in MutationObserver is used to add fmp_c attribute on the each element, in the meanwhile record the excution time
+// 3. get the highest score of dom
+//    3.1 calculte score of each different element
+//    3.1.1 different element has different score like div and img
+//    3.1.2 compare score of element with its children
+// 4. Filter elements with below average scores
+// 5. Get FMP time by excution times
 
 class FMP {
   public fmpTime = 0
@@ -55,6 +84,9 @@ class FMP {
 
   private initObserver() {
     this.getFirstSnapShot()
+
+    // trigger callback when observed dom changes
+    // it will calculate FMP every time when dom changes
     this.observer = new MutationObserver(() => {
       this.callBackCount++
       const time = performance.now()
@@ -68,6 +100,7 @@ class FMP {
     })
 
     // observe all child nodes
+    // when children and nested children change
     this.observer.observe(document, {
       childList: true,
       subtree: true
@@ -88,6 +121,7 @@ class FMP {
   }
 
   private getFinalFMP() {
+    // flag makes sure that it will call only once
     if (!this.flag) {
       return
     }
@@ -95,12 +129,16 @@ class FMP {
     if (this.checkNeedCancel(START_TIME)) {
       this.observer?.disconnect()
       this.flag = false
-      const res = this.getTreeScore(document.body)
-      let tp: CalScore = {} as CalScore
 
-      for (const item of res.dpss) {
-        if (tp && tp.st) {
-          if (tp.st < item.st) {
+      const treeScore = this.getTreeScore(document.body)
+      let tp: CalculatedScore = {} as CalculatedScore
+
+      if (!treeScore) return false
+
+      // 从document下拿到得分最高的一个元素
+      for (const item of treeScore.dpss) {
+        if (tp && tp.score) {
+          if (tp.score < item.score) {
             tp = item
           }
         } else {
@@ -108,10 +146,18 @@ class FMP {
         }
       }
 
+      // Get all of soures load time
+      // Todo: 研究一下这里，拿 demo/index.html 进行实验的话 会出现 PerformancePaintTiming 和PerformanceNavigationTiming 2种数据类型
+      performance.getEntries().forEach((item: any) => {
+        console.log({ item })
+        this.entries[item.name] = item.responseEnd
+      })
+
       if (!tp) {
         return false
       }
-      const resultEls: ElementList = this.filterResult(tp.els)
+
+      const resultEls: ScoredElementList = this.filterResult(tp.eles)
       const fmpTiming: number = this.getFmpTime(resultEls)
       this.fmpTime = fmpTiming
 
@@ -123,18 +169,18 @@ class FMP {
     }
   }
 
-  private getFmpTime(resultEls: ElementList): number {
+  private getFmpTime(resultEls: ScoredElementList): number {
     let rt = 0
     for (const item of resultEls) {
       let time = 0
-      if (item.weight === 1) {
-        const index: number = +(item.ele.getAttribute(TAG_ATTRIBUTE) as string)
+      if (item.weight === Score.Low) {
+        const index: number = +(item.ele.getAttribute(FMP_ATTRIBUTE) as string)
         time = this.statusCollector[index] && this.statusCollector[index].time
-      } else if (item.weight === 2) {
-        if (item.ele.tagName === 'IMG') {
+      } else if (item.weight === Score.Middle) {
+        if (item.ele.tagName === ELE_TAG_NAME.Img) {
           time = this.entries[(item.ele as HTMLImageElement).src]
-        } else if (item.ele.tagName === 'SVG') {
-          const index: number = +(item.ele.getAttribute(TAG_ATTRIBUTE) as string)
+        } else if (item.ele.tagName === ELE_TAG_NAME.Svg) {
+          const index: number = +(item.ele.getAttribute(FMP_ATTRIBUTE) as string)
           time = this.statusCollector[index] && this.statusCollector[index].time
         } else {
           const match = getStyle(item.ele, 'background-image').match(/url\("(.*?)"\)/)
@@ -147,9 +193,9 @@ class FMP {
           }
           time = this.entries[url]
         }
-      } else if (item.weight === 4) {
+      } else if (item.weight === Score.High) {
         if (item.ele.tagName === 'CANVAS') {
-          const index: number = +(item.ele.getAttribute(TAG_ATTRIBUTE) as string)
+          const index: number = +(item.ele.getAttribute(FMP_ATTRIBUTE) as string)
           time = this.statusCollector[index] && this.statusCollector[index].time
         } else if (item.ele.tagName === 'VIDEO') {
           time = this.entries[(item.ele as HTMLVideoElement).src]
@@ -170,69 +216,84 @@ class FMP {
 
   private checkNeedCancel(start: number): boolean {
     const time: number = performance.now() - start
-    const lastCalTime: number =
+    const lastCallTime: number =
       this.statusCollector.length > 0
         ? this.statusCollector[this.statusCollector.length - 1].time
         : 0
 
-    return time > LIMIT || time - lastCalTime > 1000
+    return time > LIMIT || time - lastCallTime > 1000
   }
 
-  private filterResult(els: ElementList): ElementList {
+  // 过滤得分最大的元素
+  private filterResult(els: ScoredElementList): ScoredElementList {
     if (els.length === 1) {
       return els
     }
     let sum = 0
-    els.forEach((item: any) => {
-      sum += item.st
+    els.forEach((item: ScoredElement) => {
+      sum += item.score
     })
     const avg: number = sum / els.length
-    return els.filter((item: any) => {
-      return item.st > avg
+    // Keep the elements that score above average
+    return els.filter((item: ScoredElement) => {
+      return item.score > avg
     })
   }
-  private calculateGrades(ele: Element, dpss: CalScore[]): CalScore {
+
+  // 1. 获取当前元素子元素的得分和:sdp
+  // 2. 根据 width * height * 当前元素对应标签的权重 得到 st
+  // 3. 得到当前元素在整个视口的占比:areaPercent
+  // 4. 将子元素的得分 sdp 和 当前元素的得分 * 视口面积占比 进行比较
+  // 5. 比较方法如下：
+  //  5.1 如果sdp大，则将els填充为子元素集合
+  //  5.2 否则 els 为当前元素集合
+  private calculateGrades(ele: Element, dpss: CalculatedScore[]): CalculatedScore {
     const { width, height, left, top } = ele.getBoundingClientRect()
     let isInViewPort = true
     if (WH < top || WW < left) {
       isInViewPort = false
     }
     let sdp = 0
-    dpss.forEach((item: any) => {
-      sdp += item.st
+
+    // sum of child's weights
+    dpss.forEach((item: CalculatedScore) => {
+      sdp += item.score
     })
-    let weight: number = Number(ELE_WEIGHT[ele.tagName as any]) || 1
+
+    let weight: number = Number(ELE_WEIGHT[ele.tagName as any]) || ELE_WEIGHT.Other
     // If there is a common element of the background image, it is calculated according to the picture
     if (
-      weight === 1 &&
+      weight === ELE_WEIGHT.Other &&
       getStyle(ele, 'background-image') &&
       getStyle(ele, 'background-image') !== 'initial' &&
       getStyle(ele, 'background-image') !== 'none'
     ) {
-      weight = ELE_WEIGHT.IMG
+      weight = ELE_WEIGHT.Img
     }
     // score = the area of element
-    let st: number = isInViewPort ? width * height * weight : 0
-    let els = [{ ele, st, weight }]
+    let score: number = isInViewPort ? width * height * weight : 0
+
+    let eles: ScoredElement[] = [{ ele, score, weight }]
     const root = ele
     // The percentage of the current element in the viewport
     const areaPercent = this.calculateAreaParent(ele)
     // If the sum of the child's weights is greater than the parent's true weight
-    if (sdp > st * areaPercent || areaPercent === 0) {
-      st = sdp
-      els = []
+    if (sdp > score * areaPercent || areaPercent === 0) {
+      score = sdp
+      eles = []
       for (const item of dpss) {
-        els = els.concat(item.els)
+        eles = eles.concat(item.eles)
       }
     }
     return {
       dpss,
-      st,
-      els,
+      score,
+      eles,
       root
     }
   }
 
+  // calculate the percentage of the current element in the viewport
   private calculateAreaParent(ele: Element): number {
     const { left, right, top, bottom, width, height } = ele.getBoundingClientRect()
     const winLeft = 0
@@ -250,19 +311,19 @@ class FMP {
     return (overlapX * overlapY) / (width * height)
   }
 
-  private getTreeScore(node: Element): CalScore | any {
+  private getTreeScore(node: Element): CalculatedScore | null {
     if (!node) {
-      return {}
+      return null
     }
     const dpss = []
-    const children: any = node.children
+    const children: HTMLCollection = node.children
     for (const child of children) {
       // Only calculate marked elements
-      if (!child.getAttribute('fmp_c')) {
+      if (!child.getAttribute(FMP_ATTRIBUTE)) {
         continue
       }
       const s = this.getTreeScore(child)
-      if (s.st) {
+      if (s && s.score) {
         dpss.push(s)
       }
     }
@@ -278,13 +339,13 @@ class FMP {
       if ($children && !!$children.length) {
         for (let i = 0; i < $children.length; i++) {
           const $child: Element = $children[i]
-          const hasSetTag = $child.getAttribute(TAG_ATTRIBUTE) !== null
+          const hasSetTag = $child.getAttribute(FMP_ATTRIBUTE) !== null
           if (!hasSetTag) {
             const { left, top, width, height } = $child.getBoundingClientRect()
             if (WH < top || WW < left || width === 0 || height === 0) {
               continue
             }
-            $child.setAttribute(TAG_ATTRIBUTE, `${callbackCount}`)
+            $child.setAttribute(FMP_ATTRIBUTE, `${callbackCount}`)
           }
           this.setTag($child, callbackCount)
         }

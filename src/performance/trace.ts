@@ -1,5 +1,7 @@
 import { Options, WebVitals } from './../types.d'
-import FMP from './fmp'
+import Painting from './painting'
+
+const DEFAULT_RECORD_TIME_OUT = 4000
 class Trace {
   private perfDetail: WebVitals = {
     network: {},
@@ -21,24 +23,31 @@ class Trace {
     }
   }
 
-  public async recordPerf(options: Options) {
-    if (options.fmp) {
-      // get fmp metrics
-      const fmp = await new FMP()
-      this.perfDetail.page.fmp = fmp.fmpTime
-    }
+  public recordPerf(options: Options) {
+    const painting = new Painting()
+    painting.getPaitingTime(options)
+
     setTimeout(() => {
-      // get basic metrics
-      this.getWebVitals(options)
+      const webVitals = this.getWebVitals(options)
+      webVitals.page.fmp = painting.fmpTime
+      webVitals.page.fp = painting.fpTime
+      webVitals.page.fcp = painting.fcpTime
+
+      this.perfDetail = webVitals
 
       // Todo: report web vitals
-    }, 4000)
+    }, DEFAULT_RECORD_TIME_OUT)
   }
+
+  // PerformanceNavigationTiming: https://developer.mozilla.org/zh-CN/docs/Web/API/PerformanceNavigationTiming
+  // 1.可用于确定加载或卸载文档需要多少时间
+
+  // getEntriesByType: https://developer.mozilla.org/zh-CN/docs/Web/API/Performance/getEntriesByType
+  // 1. 返回给定类型的 PerformanceEntry 列表
 
   public getWebVitals(options: Options): WebVitals {
     let { timing } = window.performance as any
 
-    // Todo: figure out differences between performance and PerformanceNavigationTiming
     if (typeof window.PerformanceNavigationTiming === 'function') {
       const nt2Timing = performance.getEntriesByType('navigation')[0]
 
@@ -95,8 +104,6 @@ class Trace {
         domLoad: loadEventStart - fetchStart
       }
     }
-
-    this.perfDetail = webVitals
 
     return webVitals
   }

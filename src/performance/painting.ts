@@ -1,3 +1,5 @@
+import { Options } from '../types'
+
 export type ScoredElement = {
   ele: Element
   score: number
@@ -55,19 +57,26 @@ const getStyle = (element: Element | any, attr: any) => {
   }
 }
 
-// ## how to calculate FMP time
+// 如何计算FMP(First Meaningful Painting)
+// 1. 利用 MutationObserver 监听document对想
+// 2. 给每个标签增加一个 fmp_c 属性，值对应当前 mutationObserver 回调执行的次数
+// 3. 根据 dom 标签的不同（标签不同 圈中不同） 得出每个Dom结构（子dom的集合体）的得分。例如: dom下有3个标签 section/div/header 分别计算着3个标签以及子标签的得分
+// 4. 然后取最高得分的dom结构体
+// 5. 对dom结构体进行过滤，将低于平均分的dom过滤掉
+// 6. 对得分最高过滤后的dom结构进行遍历，拿到时间最长的那一个作为 FMP时间
 
-// 1. use MutationObserver to observe document
-// 2. callback in MutationObserver is used to add fmp_c attribute on the each element, in the meanwhile record the excution time
-// 3. get the highest score of dom
-//    3.1 calculte score of each different element
-//    3.1.1 different element has different score like div and img
-//    3.1.2 compare score of element with its children
-// 4. Filter elements with below average scores
-// 5. Get FMP time by excution times
+// 如何拿到各个资源的时间:
+// 1. getEntries
+//  1.1 PerformanceNavigationTiming()
+//  1.2 PerformanceResourceTiming：包含各个资源加载的信息，例如 script 资源等
+//  1.3 PerformancePaintTiming: 包含first-paint、first-contentful-paint 指标
 
-class FMP {
+// getEntries: 返回一个列表，该列表包含一些用于承载各种性能数据的对象
+// getEntriesByType: 返回一个列表，该列表包含一些用于承载各种性能数据的对象，按类型过滤
+class Painting {
   public fmpTime = 0
+  public fcpTime = 0
+  public fpTime = 0
   private callBackCount = 0
   private observer?: MutationObserver
   private statusCollector: Array<{ time: number }> = [] // nodes change time
@@ -79,7 +88,28 @@ class FMP {
       console.warn('your browser do not support performance.getEntries')
       return
     }
-    this.initObserver()
+  }
+
+  public getPaitingTime(options: Options) {
+    if (options.fmp) {
+      this.initObserver()
+    }
+    this.getFPAndFCPTime()
+  }
+
+  // Get First Painting Time and First Contentful Time
+  private getFPAndFCPTime(): void {
+    if (typeof window.PerformancePaintTiming === 'function') {
+      const paintingResults = performance.getEntriesByType('paint')
+      paintingResults.forEach(p => {
+        if (p.name === 'first-paint') {
+          this.fpTime = p.startTime
+        }
+        if (p.name === 'first-contentful-paint') {
+          this.fcpTime = p.startTime
+        }
+      })
+    }
   }
 
   private initObserver() {
@@ -147,10 +177,10 @@ class FMP {
       }
 
       // Get all of soures load time
-      // Todo: 研究一下这里，拿 demo/index.html 进行实验的话 会出现 PerformancePaintTiming 和PerformanceNavigationTiming 2种数据类型
       performance.getEntries().forEach((item: any) => {
-        console.log({ item })
-        this.entries[item.name] = item.responseEnd
+        if (typeof item.responseEnd !== 'undefined') {
+          this.entries[item.name] = item.responseEnd
+        }
       })
 
       if (!tp) {
@@ -160,8 +190,6 @@ class FMP {
       const resultEls: ScoredElementList = this.filterResult(tp.eles)
       const fmpTiming: number = this.getFmpTime(resultEls)
       this.fmpTime = fmpTiming
-
-      console.log({ fmpTiming })
     } else {
       setTimeout(() => {
         this.getFinalFMP()
@@ -354,4 +382,4 @@ class FMP {
   }
 }
 
-export default FMP
+export default Painting

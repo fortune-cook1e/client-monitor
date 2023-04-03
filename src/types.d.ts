@@ -18,6 +18,8 @@ export interface WebVitals {
   page: {
     tti?: number // Time to interact
     fmp?: number // first meaningful paint time
+    fcp?: number // first contentful time
+    fp?: number // first painting time
     fpt?: number // first parint time or blank screen time
     domReady?: number // dom ready time
     domAnalysis?: number //  Interactive dom time

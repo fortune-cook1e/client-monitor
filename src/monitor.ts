@@ -2,7 +2,7 @@ import trace from './performance/trace'
 import { Options } from './types'
 
 const DEFAULT_OPTIONS: Options = {
-  collector: location.host,
+  url: location.host,
   spa: false,
   fmp: false
 }

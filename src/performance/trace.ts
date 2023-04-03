@@ -1,5 +1,12 @@
-import { Options, WebVitals } from './../types.d'
+import Report from '../services/report'
+import { Options, WebVitals, ReportType } from '../types'
+
 import Painting from './painting'
+
+// export enum ReportEnum {
+//   Error = 'error',
+//   Performance = 'performance'
+// }
 
 const DEFAULT_RECORD_TIME_OUT = 4000
 class Trace {
@@ -36,6 +43,7 @@ class Trace {
       this.perfDetail = webVitals
 
       // Todo: report web vitals
+      new Report(options, ReportType.Performance).sendByXHR(webVitals)
     }, DEFAULT_RECORD_TIME_OUT)
   }
 
@@ -106,6 +114,17 @@ class Trace {
     }
 
     return webVitals
+  }
+
+  private clearWebVitals() {
+    if (!(window.performance && window.performance.clearResourceTimings)) {
+      return
+    }
+    window.performance.clearResourceTimings()
+    this.perfDetail = {
+      network: {},
+      page: {}
+    }
   }
 }
 

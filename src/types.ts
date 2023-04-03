@@ -1,5 +1,5 @@
 export interface Options {
-  collector: string // domain(backend)
+  url: string // domain(backend)
   spa?: boolean // single-page-app or not
   fmp?: boolean // enable fmp calculation
 }
@@ -25,4 +25,9 @@ export interface WebVitals {
     domAnalysis?: number //  Interactive dom time
     domLoad?: number // page full load time
   }
+}
+
+export enum ReportType {
+  Error = 'error',
+  Performance = 'performance'
 }

@@ -1,10 +1,17 @@
+import { JSError } from './errors/index'
 import trace from './performance/trace'
 import { Options } from './types'
 
-const DEFAULT_OPTIONS: Options = {
+const DEFAULT_ERROR_OPTIONS = {
+  js: false,
+  ajax: false
+}
+
+const DEFAULT_OPTIONS: Required<Options> = {
   url: location.host,
   spa: false,
-  fmp: false
+  fmp: false,
+  errors: DEFAULT_ERROR_OPTIONS
 }
 
 export class Monitor {
@@ -12,17 +19,21 @@ export class Monitor {
   constructor(options: Partial<Options>) {
     this.options = {
       ...DEFAULT_OPTIONS,
-      ...options
+      ...options,
+      errors: {
+        ...DEFAULT_OPTIONS.errors,
+        ...options?.errors
+      }
     }
   }
 
-  // register config
   register(config?: Partial<Options>) {
     this.options = {
       ...this.options,
       ...config
     }
     this.performance()
+    this.catchErrors(this.options)
   }
 
   performance() {
@@ -32,11 +43,18 @@ export class Monitor {
       window.addEventListener(
         'load',
         () => {
-          // do sth
           trace.getPerf(this.options)
         },
         false
       )
+    }
+  }
+
+  catchErrors(options: Options) {
+    const { errors = DEFAULT_ERROR_OPTIONS } = options
+    const { js = false, ajax = false } = errors
+    if (js) {
+      JSError.handleJsError(options)
     }
   }
 }

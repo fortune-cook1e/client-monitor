@@ -3,17 +3,9 @@ import { Options, WebVitals, ReportType } from '../types'
 
 import Painting from './painting'
 
-// export enum ReportEnum {
-//   Error = 'error',
-//   Performance = 'performance'
-// }
-
 const DEFAULT_RECORD_TIME_OUT = 4000
 class Trace {
-  private perfDetail: WebVitals = {
-    network: {},
-    page: {}
-  }
+  private performance: WebVitals = {}
 
   public getPerf(options: Options) {
     this.recordPerf(options)
@@ -36,14 +28,16 @@ class Trace {
 
     setTimeout(() => {
       const webVitals = this.getWebVitals(options)
-      webVitals.page.fmp = painting.fmpTime
-      webVitals.page.fp = painting.fpTime
-      webVitals.page.fcp = painting.fcpTime
+      webVitals.fmp = painting.fmpTime
+      webVitals.fp = painting.fpTime
+      webVitals.fcp = painting.fcpTime
 
-      this.perfDetail = webVitals
+      this.performance = webVitals
 
-      // Todo: report web vitals
-      new Report(options, ReportType.Performance).sendByXHR(webVitals)
+      // report data to server
+      new Report(ReportType.Performance, options).sendByXHR({
+        performance: webVitals
+      })
     }, DEFAULT_RECORD_TIME_OUT)
   }
 
@@ -93,24 +87,20 @@ class Trace {
     const hasHttps = location.protocol === 'https'
 
     const webVitals: WebVitals = {
-      network: {
-        redirect,
-        dns: domainLookupEnd - domainLookupStart,
-        tcp: connectEnd - connectStart,
-        ssl: hasHttps && secureConnectionStart > 0 ? connectEnd - secureConnectionStart : undefined,
-        ttfb: responseStart - requestStart,
-        trans: responseEnd - responseStart,
-        resources: loadEventStart - domContentLoadedEventEnd,
-        firstByte: responseStart - domainLookupStart
-      },
-      page: {
-        fpt: responseEnd - responseStart,
-        tti: domInteractive - domainLookupStart,
-        fmp: options.fmp ? this.perfDetail.page.fmp : 0,
-        domAnalysis: domInteractive - responseEnd,
-        domReady: domContentLoadedEventEnd - fetchStart,
-        domLoad: loadEventStart - fetchStart
-      }
+      redirect,
+      dns: domainLookupEnd - domainLookupStart,
+      tcp: connectEnd - connectStart,
+      ssl: hasHttps && secureConnectionStart > 0 ? connectEnd - secureConnectionStart : undefined,
+      ttfb: responseStart - requestStart,
+      trans: responseEnd - responseStart,
+      resources: loadEventStart - domContentLoadedEventEnd,
+      firstByte: responseStart - domainLookupStart,
+      fpt: responseEnd - responseStart,
+      tti: domInteractive - domainLookupStart,
+      fmp: options.fmp ? this.performance.fmp : 0,
+      domAnalysis: domInteractive - responseEnd,
+      domReady: domContentLoadedEventEnd - fetchStart,
+      domLoad: loadEventStart - fetchStart
     }
 
     return webVitals
@@ -121,10 +111,7 @@ class Trace {
       return
     }
     window.performance.clearResourceTimings()
-    this.perfDetail = {
-      network: {},
-      page: {}
-    }
+    this.performance = {}
   }
 }
 

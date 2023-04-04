@@ -32,7 +32,8 @@ export default [
       },
       {
         file: './lib/index.esm.js',
-        format: 'es'
+        format: 'es',
+        sourcemap: true
       },
       {
         file: './lib/index.min.js',

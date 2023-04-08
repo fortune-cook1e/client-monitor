@@ -1,11 +1,14 @@
+export interface ErrorsOption {
+  js?: boolean
+  ajax?: boolean
+  resource?: boolean
+}
+
 export interface Options {
   url: string // domain(backend)
   spa?: boolean // single-page-app or not
   fmp?: boolean // enable fmp calculation
-  errors?: {
-    js?: boolean
-    ajax?: boolean
-  }
+  errors?: ErrorsOption
 }
 
 export interface WebVitals {
@@ -62,7 +65,7 @@ export interface ErrorFields {
 }
 
 export interface ReportFields {
-  pagePath: string
+  pagePath?: string
   service?: string
 }
 

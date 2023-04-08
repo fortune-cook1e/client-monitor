@@ -1,10 +1,11 @@
-import { JSError } from './errors/index'
+import { JSError, ResourceError } from './errors/index'
 import trace from './performance/trace'
-import { Options } from './types'
+import { ErrorsOption, Options } from './types'
 
-const DEFAULT_ERROR_OPTIONS = {
-  js: false,
-  ajax: false
+const DEFAULT_ERROR_OPTIONS: ErrorsOption = {
+  js: true,
+  ajax: false,
+  resource: true
 }
 
 const DEFAULT_OPTIONS: Required<Options> = {
@@ -52,9 +53,8 @@ export class Monitor {
 
   catchErrors(options: Options) {
     const { errors = DEFAULT_ERROR_OPTIONS } = options
-    const { js = false, ajax = false } = errors
-    if (js) {
-      JSError.handleJsError(options)
-    }
+    const { js = true, ajax = false, resource = true } = errors
+    js && JSError.handleError(options)
+    resource && ResourceError.handleError(options)
   }
 }

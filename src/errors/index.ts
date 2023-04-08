@@ -1,3 +1,4 @@
 import JSError from './js'
+import ResourceError from './resource'
 
-export { JSError }
+export { JSError, ResourceError }

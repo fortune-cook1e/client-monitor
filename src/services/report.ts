@@ -38,13 +38,28 @@ class Report {
     if (!this.url) return
 
     if (typeof navigator.sendBeacon === 'function') {
-      // post method
-      // FixMe: why sendBeacon doesn't send data
-      navigator.sendBeacon(this.url, data)
+      // Todo: figure out why sendBeacon send no data to server
+      // this.sendByXHR({
+      //   ...data,
+      //   supperBeacon: 1
+      // })
+      const blob = new Blob(
+        [
+          JSON.stringify({
+            ...data,
+            sendByBeacon: 1
+          })
+        ],
+        { type: 'application/json' }
+      )
+      navigator.sendBeacon(this.url, blob)
       return
     }
 
-    this.sendByXHR(data)
+    // this.sendByXHR({
+    //   ...data,
+    //   sendByBealFaileNotUserr: 1
+    // })
   }
 }
 

@@ -22,7 +22,6 @@ class TaskQueue {
   }
 
   public finallyFlushTasks() {
-    console.log('inflaflutaks')
     window.addEventListener('visibilitychange', event => {
       if (document.visibilityState === 'hidden') {
         if (!this.queues.length) return

@@ -1,6 +1,6 @@
 {
   "name": "cookie-client-monitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Client-side Javascript tracing library",
   "main": "lib/index.js",
   "module": "lib/index.esm.js",

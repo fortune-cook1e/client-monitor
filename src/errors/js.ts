@@ -3,7 +3,7 @@ import { ErrorCategory, LogLevel, Options } from '../types'
 import Base from './base'
 
 class JSError extends Base {
-  public handleJsError(options: Options) {
+  public handleError(options: Options) {
     window.onerror = (
       event: Event | string,
       source?: string,
@@ -11,6 +11,8 @@ class JSError extends Base {
       col?: number,
       error?: Error
     ) => {
+      console.log('JS Error*&*(^&^&*^')
+
       this.log = {
         category: ErrorCategory.Js,
         level: LogLevel.Error,

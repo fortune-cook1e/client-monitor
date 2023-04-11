@@ -2,6 +2,12 @@ export interface ErrorsOption {
   js?: boolean
   ajax?: boolean
   resource?: boolean
+  promise?: boolean
+}
+
+export interface ReportOptions {
+  performance?: boolean
+  error?: ErrorsOption
 }
 
 export interface Options {
@@ -9,6 +15,7 @@ export interface Options {
   spa?: boolean // single-page-app or not
   fmp?: boolean // enable fmp calculation
   errors?: ErrorsOption
+  report?: ReportOptions
 }
 
 export interface WebVitals {
@@ -50,7 +57,8 @@ export enum ErrorCategory {
   Unknown = 0,
   Ajax = 1,
   Js = 2,
-  Resource = 3
+  Resource = 3,
+  Promise = 4
 }
 
 export interface ErrorFields {

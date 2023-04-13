@@ -1,4 +1,4 @@
-import { Options, ReportType, XHRState } from '../types'
+import { Options, ReportType, XHRReadyStateEnum } from '../types'
 
 class Report {
   private type: ReportType
@@ -22,7 +22,7 @@ class Report {
     xhr.open('post', this.url, true)
     xhr.setRequestHeader('Content-Type', 'application/json')
     xhr.onreadystatechange = function () {
-      if (xhr.readyState === XHRState.Done && xhr.status === 200) {
+      if (xhr.readyState === XHRReadyStateEnum.Done && xhr.status === 200) {
         console.log('Report Successfully')
       }
     }

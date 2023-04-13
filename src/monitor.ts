@@ -1,10 +1,11 @@
-import { JSError, PromiseError, ResourceError } from './errors/index'
+import { AjaxError, JSError, PromiseError, ResourceError } from './errors/index'
 import trace from './performance/trace'
+import { traceRequest } from './request/request'
 import { ErrorsOption, Options, ReportOptions } from './types'
 
 const DEFAULT_ERROR_OPTIONS: ErrorsOption = {
   js: true,
-  ajax: false,
+  ajax: true,
   resource: true,
   promise: true
 }
@@ -23,7 +24,8 @@ const DEFAULT_OPTIONS: Required<Options> = {
   spa: false,
   fmp: false,
   errors: DEFAULT_ERROR_OPTIONS,
-  report: DEFAULT_REPORT_OPTIONS
+  report: DEFAULT_REPORT_OPTIONS,
+  handleError: true
 }
 
 export class Monitor {
@@ -49,7 +51,12 @@ export class Monitor {
       ...config
     }
     this.performance()
-    this.catchErrors(this.options)
+
+    traceRequest(this.options)
+
+    if (this.options.handleError) {
+      this.catchErrors(this.options)
+    }
   }
 
   performance() {
@@ -72,5 +79,6 @@ export class Monitor {
     js && JSError.handleError(options)
     resource && ResourceError.handleError(options)
     promise && PromiseError.handleError(options)
+    ajax && AjaxError.handleError(options)
   }
 }

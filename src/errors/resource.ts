@@ -7,8 +7,6 @@ class ResourceError extends Base {
     window.addEventListener(
       'error',
       event => {
-        console.log('Resource Error', { event })
-
         if (!event) return
         const target: any = event.target
         const isElementTarget =
@@ -17,8 +15,6 @@ class ResourceError extends Base {
           target instanceof HTMLImageElement
 
         if (!isElementTarget) return
-
-        console.log('Start handle Resource Error')
 
         this.log = {
           category: ErrorCategory.Resource,

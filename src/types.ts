@@ -16,6 +16,7 @@ export interface Options {
   fmp?: boolean // enable fmp calculation
   errors?: ErrorsOption
   report?: ReportOptions
+  handleError?: boolean
 }
 
 export interface WebVitals {
@@ -43,7 +44,11 @@ export enum ReportType {
   Errors = 3
 }
 
-export enum XHRState {
+export enum XHRReadyStateEnum {
+  Unsent = 0,
+  Opened = 1, // open has been called
+  Received = 2, // send has benn called
+  Loading = 3,
   Done = 4
 }
 
@@ -59,6 +64,10 @@ export enum ErrorCategory {
   Js = 2,
   Resource = 3,
   Promise = 4
+}
+
+export enum CustomEventEnum {
+  XHRReadyStateChange = 'xhrReadyStateChange'
 }
 
 export interface ErrorFields {
@@ -78,3 +87,22 @@ export interface ReportFields {
 }
 
 export type TaskData = ErrorFields & ReportFields
+
+export type RequestConfig = [
+  method: string,
+  url: string | URL,
+  async: boolean,
+  username?: string | null | undefined,
+  password?: string | null | undefined
+]
+
+export interface CustomizedXhr extends Omit<XMLHttpRequest, 'open'> {
+  requestConfig?: RequestConfig
+  open(
+    method: string,
+    url: string | URL,
+    async: boolean,
+    username?: string | null,
+    password?: string | null
+  ): void
+}

@@ -11,8 +11,6 @@ class JSError extends Base {
       col?: number,
       error?: Error
     ) => {
-      console.log('JS Error*&*(^&^&*^')
-
       this.log = {
         category: ErrorCategory.Js,
         level: LogLevel.Error,

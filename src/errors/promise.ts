@@ -5,7 +5,7 @@ import Base from './base'
 class PromiseError extends Base {
   public handleError(options: Options) {
     window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-      console.log('trigger unhandledrejection', { event })
+      console.log('Promise Error', { event })
       let url = ''
       if (!event || !event.reason) return
 

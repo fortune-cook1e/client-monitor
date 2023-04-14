@@ -8,6 +8,7 @@ import { CustomEventEnum, CustomizedXhr, Options, RequestConfig, XHRReadyStateEn
 // 4. 错误监控实现中
 //  4.1 利用 window.addEventListener('xhrReadyStateChange') 监听自定义事件，通过判断 status 或其他字段来判断请求是否错误
 
+// MDN: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState
 export function xhrInterceptor(options: Options) {
   const OriginXHR = window.XMLHttpRequest
   const originXHRSend = XMLHttpRequest.prototype.send

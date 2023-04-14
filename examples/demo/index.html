@@ -53,8 +53,11 @@
       <!-- 在这里添加页面底部的版权信息、联系方式等 -->
       <p>&copy; 2023 活动主办方</p>
       <p>联系方式：xxx@xxx.com</p>
+
+      <button id="trigger">trigger</button>
+      <button id="trigger2">trigger2</button>
     </footer>
-    <script type="module">
+    <!-- <script type="module">
       import { Monitor } from '../../lib/index.esm.js'
 
       const monitor = new Monitor()
@@ -63,15 +66,46 @@
         fmp: false,
         url: 'http://localhost:3000/api/monitor/collect'
       })
+    </script> -->
+
+    <script>
+      let log = function () {
+        // 测试是否支持 Beacon
+        if (!navigator.sendBeacon) return true
+        const data = {
+          start: new Date().getTime(),
+          end: performance.now(),
+          url: 'http://localhost:3000/api/monitor/collect'
+        }
+
+        const blob = new Blob([JSON.stringify(data)], {
+          type: 'application/json; charset=UTF-8'
+        })
+
+        const log1Result = navigator.sendBeacon('http://localhost:3000/api/monitor/collect', blob)
+      }
+
+      function log2() {
+        const data = { key: 'value' }
+        const log2Result = navigator.sendBeacon(
+          'http://localhost:3000/api/monitor/collect',
+          JSON.stringify(data)
+        )
+      }
+
+      const triggerBtn = document.getElementById('trigger')
+      const triggerBtn2 = document.getElementById('trigger2')
+      triggerBtn.onclick = log
+      triggerBtn2.onclick = log2
     </script>
 
-    <script defer src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- <script defer src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
     <!-- <script defer src="./jserror.js"></script> -->
     <!-- <script defer src="./resourceError.js"></script> -->
     <!-- <script defer src="./promiseError.js"></script> -->
-    <script defer src="./ajaxError.js"></script>
+    <!-- <script defer src="./ajaxError.js"></script>
     <script defer src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script defer crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.gl3232131obal.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.gl3232131obal.js"></script> -->
   </body>
 </html>

@@ -39,10 +39,6 @@ class Report {
 
     if (typeof navigator.sendBeacon === 'function') {
       // Todo: figure out why sendBeacon send no data to server
-      // this.sendByXHR({
-      //   ...data,
-      //   supperBeacon: 1
-      // })
       const blob = new Blob(
         [
           JSON.stringify({
@@ -50,16 +46,11 @@ class Report {
             sendByBeacon: 1
           })
         ],
-        { type: 'application/json' }
+        { type: 'application/json; charset=UTF-8' }
       )
       navigator.sendBeacon(this.url, blob)
       return
     }
-
-    // this.sendByXHR({
-    //   ...data,
-    //   sendByBealFaileNotUserr: 1
-    // })
   }
 }
 

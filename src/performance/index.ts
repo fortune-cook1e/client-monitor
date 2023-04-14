@@ -4,8 +4,8 @@ import { Options, WebVitals, ReportType } from '../types'
 import Painting from './painting'
 
 const DEFAULT_RECORD_TIME_OUT = 4000
-class Trace {
-  private performance: WebVitals = {}
+class PerformanceTrace {
+  private performanceDetails: WebVitals = {}
 
   public getPerf(options: Options) {
     this.recordPerf(options)
@@ -32,7 +32,7 @@ class Trace {
       webVitals.fp = painting.fpTime
       webVitals.fcp = painting.fcpTime
 
-      this.performance = webVitals
+      this.performanceDetails = webVitals
 
       // report data to server
       new Report(ReportType.Performance, options).sendByXHR({
@@ -97,7 +97,7 @@ class Trace {
       firstByte: responseStart - domainLookupStart,
       fpt: responseEnd - responseStart,
       tti: domInteractive - domainLookupStart,
-      fmp: options.fmp ? this.performance.fmp : 0,
+      fmp: options.fmp ? this.performanceDetails.fmp : 0,
       domAnalysis: domInteractive - responseEnd,
       domReady: domContentLoadedEventEnd - fetchStart,
       domLoad: loadEventStart - fetchStart
@@ -111,10 +111,10 @@ class Trace {
       return
     }
     window.performance.clearResourceTimings()
-    this.performance = {}
+    this.performanceDetails = {}
   }
 }
 
-const trace = new Trace()
+const performanceTrace = new PerformanceTrace()
 
-export default trace
+export default performanceTrace

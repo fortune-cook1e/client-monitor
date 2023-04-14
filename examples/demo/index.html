@@ -57,16 +57,19 @@
       <button id="trigger">trigger</button>
       <button id="trigger2">trigger2</button>
     </footer>
-    <!-- <script type="module">
+    <script type="module">
       import { Monitor } from '../../lib/index.esm.js'
 
       const monitor = new Monitor()
 
-      monitor.register({
-        fmp: false,
-        url: 'http://localhost:3000/api/monitor/collect'
-      })
-    </script> -->
+      const agentInfo = monitor.getUserAgent()
+      console.log({ agentInfo })
+
+      // monitor.register({
+      //   fmp: false,
+      //   url: 'http://localhost:3000/api/monitor/collect'
+      // })
+    </script>
 
     <script>
       let log = function () {

@@ -1,7 +1,8 @@
 import { AjaxError, JSError, PromiseError, ResourceError } from './errors/index'
-import trace from './performance/trace'
+import performanceTrace from './performance'
 import { traceRequest } from './request/request'
 import { ErrorsOption, Options, ReportOptions } from './types'
+import { getUserAgentInfo } from './utils'
 
 const DEFAULT_ERROR_OPTIONS: ErrorsOption = {
   js: true,
@@ -45,7 +46,7 @@ export class Monitor {
     }
   }
 
-  register(config?: Partial<Options>) {
+  public register(config?: Partial<Options>) {
     this.options = {
       ...this.options,
       ...config
@@ -59,21 +60,25 @@ export class Monitor {
     }
   }
 
-  performance() {
+  public performance() {
     if (document.readyState === 'complete') {
-      trace.getPerf(this.options)
+      performanceTrace.getPerf(this.options)
     } else {
       window.addEventListener(
         'load',
         () => {
-          trace.getPerf(this.options)
+          performanceTrace.getPerf(this.options)
         },
         false
       )
     }
   }
 
-  catchErrors(options: Options) {
+  public getUserAgent() {
+    return getUserAgentInfo()
+  }
+
+  private catchErrors(options: Options) {
     const { errors = DEFAULT_ERROR_OPTIONS } = options
     const { js = true, ajax = false, resource = true, promise = true } = errors
     js && JSError.handleError(options)

@@ -38,7 +38,6 @@ class Report {
     if (!this.url) return
 
     if (typeof navigator.sendBeacon === 'function') {
-      // Todo: figure out why sendBeacon send no data to server
       const blob = new Blob(
         [
           JSON.stringify({

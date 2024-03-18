@@ -24,7 +24,7 @@ monitor.register({
   errors:{
     js:true,
     ajax:true,
-    resource:true
+    resource:true,
     promise:true
   },
   report:{
@@ -32,7 +32,7 @@ monitor.register({
     error:{
       js:true,
       ajax:true,
-      resource:true
+      resource:true,
       promise:true
     }
   },

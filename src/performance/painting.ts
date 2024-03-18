@@ -58,7 +58,7 @@ const getStyle = (element: Element | any, attr: any) => {
 }
 
 // 如何计算FMP(First Meaningful Painting)
-// 1. 利用 MutationObserver 监听document对想
+// 1. 利用 MutationObserver 监听document对象
 // 2. 给每个标签增加一个 fmp_c 属性，值对应当前 mutationObserver 回调执行的次数
 // 3. 根据 dom 标签的不同（标签不同 圈中不同） 得出每个Dom结构（子dom的集合体）的得分。例如: dom下有3个标签 section/div/header 分别计算着3个标签以及子标签的得分
 // 4. 然后取最高得分的dom结构体
